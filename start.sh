@@ -1,0 +1,5 @@
+VITE_TILESET_URL=/3dtiles/tileset.json \
+VITE_TILESET_PROXY_TARGET=http://192.168.233.1:8331 \
+VITE_TOPOLOGY_URL=/topology \
+VITE_TOPOLOGY_PROXY_TARGET=http://127.0.0.1:8000 \
+npm run dev -- --host 0.0.0.0

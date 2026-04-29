@@ -9,6 +9,7 @@ export enum LinkStatus {
 }
 
 export const DRONE_NODE_TYPE = 30;
+export const HANDHELD_BACKPACK_NODE_TYPE = 31;
 
 export interface RawTopologySummary {
   node_count?: number;

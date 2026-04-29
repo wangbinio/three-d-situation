@@ -2,7 +2,13 @@ import { describe, expect, it } from "vitest";
 
 import { topologyFixture } from "@/test/fixtures/topology";
 
-import { DRONE_NODE_TYPE, LinkStatus, NodeStatus, type TopologyResponse } from "./topologyTypes";
+import {
+  DRONE_NODE_TYPE,
+  HANDHELD_BACKPACK_NODE_TYPE,
+  LinkStatus,
+  NodeStatus,
+  type TopologyResponse,
+} from "./topologyTypes";
 import { normalizeTopologyResponse, parseNodeLocation } from "./topologyParser";
 
 describe("parseNodeLocation", () => {
@@ -200,6 +206,60 @@ describe("normalizeTopologyResponse", () => {
       type: 5,
       height: 0,
       ipAddress: "172.16.6.99",
+    });
+  });
+
+  it("overrides node type to handheld backpack without changing height", () => {
+    const result = normalizeTopologyResponse({
+      code: 0,
+      data: {
+        topo: {
+          node: [
+            {
+              node_id: "handheld-node",
+              node_type: 2,
+              node_status: 1,
+              node_location: "113.057538,28.663600,0",
+              node_manage_ip_addr: "172.16.6.2",
+            },
+          ],
+          link: [],
+        },
+      },
+    });
+
+    expect(result.nodes[0]).toMatchObject({
+      id: "handheld-node",
+      type: HANDHELD_BACKPACK_NODE_TYPE,
+      height: 0,
+      ipAddress: "172.16.6.2",
+      hasValidLocation: true,
+    });
+  });
+
+  it("checks drone rule before handheld backpack rule", () => {
+    const result = normalizeTopologyResponse({
+      code: 0,
+      data: {
+        topo: {
+          node: [
+            {
+              node_id: "priority-node",
+              node_type: 4,
+              node_status: 1,
+              node_location: "113.057538,28.663600,0",
+              node_manage_ip_addr: "172.16.6.11",
+            },
+          ],
+          link: [],
+        },
+      },
+    });
+
+    expect(result.nodes[0]).toMatchObject({
+      id: "priority-node",
+      type: DRONE_NODE_TYPE,
+      height: 100,
     });
   });
 });

@@ -2,15 +2,16 @@ import { describe, expect, it } from "vitest";
 
 import {
   DRONE_NODE_TYPE_STYLE,
+  HANDHELD_BACKPACK_NODE_TYPE_STYLE,
   getNodeTypeStyle,
   NODE_TYPE_STYLES,
   UNKNOWN_NODE_TYPE_STYLE,
 } from "./nodeTypeStyle";
 
 describe("nodeTypeStyle", () => {
-  it("defines all nine known node types", () => {
-    expect(NODE_TYPE_STYLES).toHaveLength(9);
-    expect(NODE_TYPE_STYLES.map((style) => style.type)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 30]);
+  it("defines all ten known node types", () => {
+    expect(NODE_TYPE_STYLES).toHaveLength(10);
+    expect(NODE_TYPE_STYLES.map((style) => style.type)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 30, 31]);
   });
 
   it("provides complete visual fields for each node type", () => {
@@ -32,6 +33,7 @@ describe("nodeTypeStyle", () => {
     expect(getNodeTypeStyle(1).name).toBe("一类设备终端");
     expect(getNodeTypeStyle(8).shape).toBe("菱形警示");
     expect(getNodeTypeStyle(30)).toBe(DRONE_NODE_TYPE_STYLE);
+    expect(getNodeTypeStyle(31)).toBe(HANDHELD_BACKPACK_NODE_TYPE_STYLE);
   });
 
   it("falls back for unknown node types", () => {

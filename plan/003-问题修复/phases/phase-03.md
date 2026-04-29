@@ -31,13 +31,13 @@
 - [ ] 将视觉尺寸缩小到当前约 1/2，优先调整 `minimumPixelSize`、`scale`、`maximumScale`。依赖：模型渲染完成。
 - [ ] 使用模型轮廓或等效可视外圈表达状态：在线白色，离线黑色。依赖：模型渲染完成。
 - [ ] 保持选中态可辨识，避免选中态把状态外圈颜色覆盖掉。依赖：状态外圈完成。
-- [ ] 调整图例图标，使 9 类图标语义与当前节点类型配置一致，且不再显示形状文字。依赖：模型形态确认。
+- [ ] 调整图例图标，使 10 类图标语义与当前节点类型配置一致，且不再显示形状文字。依赖：模型形态确认。
 - [ ] 更新单测，确认节点 Entity 使用 `model` 且不再使用 `point`。依赖：实现完成。
 
 ## 验证方式
 
 - `npm run test:unit -- --run src/config/nodeTypeStyle.spec.ts src/composables/cesiumEntityFactory.spec.ts src/components/LegendPanel.spec.ts`
-- 浏览器中观察 9 类目标图标语义是否正确，在线/离线外圈是否正确。
+- 浏览器中观察 10 类目标图标语义是否正确，在线/离线外圈是否正确。
 
 ## 疑问或需澄清事项
 

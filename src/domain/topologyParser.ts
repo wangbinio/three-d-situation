@@ -1,5 +1,6 @@
 import {
   DRONE_NODE_TYPE,
+  HANDHELD_BACKPACK_NODE_TYPE,
   LinkStatus,
   NodeStatus,
   type NormalizedTopology,
@@ -28,6 +29,11 @@ const DRONE_IP_ADDRESSES = buildDroneIpAddressSet([
   ["172.16.7", 20, 30],
   ["172.16.8", 32, 42],
   ["172.16.9", 44, 73],
+]);
+const HANDHELD_BACKPACK_IP_ADDRESSES = buildDroneIpAddressSet([
+  ["172.16.6", 2, 8],
+  ["172.16.9", 76, 83],
+  ["172.16.9", 91, 105],
 ]);
 
 // 解析节点经纬高字符串，缺省高度按 0 处理，非法坐标返回无效位置。
@@ -162,10 +168,14 @@ function createEmptyTopology(): NormalizedTopology {
   };
 }
 
-// 根据节点 IP 判断是否属于无人机名单，命中时覆盖原始 node_type。
+// 根据节点 IP 判断是否属于特殊类型名单，优先匹配无人机，再匹配手持背负设备。
 function resolveNodeType(rawNode: RawTopologyNode, ipAddress: string): number {
   if (isDroneIpAddress(ipAddress)) {
     return DRONE_NODE_TYPE;
+  }
+
+  if (isHandheldBackpackIpAddress(ipAddress)) {
+    return HANDHELD_BACKPACK_NODE_TYPE;
   }
 
   return typeof rawNode.node_type === "number" ? rawNode.node_type : 0;
@@ -211,6 +221,11 @@ function readNonEmptyString(value: string | undefined): string | null {
 // 判断 IP 是否命中硬编码的无人机白名单。
 function isDroneIpAddress(ipAddress: string): boolean {
   return DRONE_IP_ADDRESSES.has(ipAddress);
+}
+
+// 判断 IP 是否命中硬编码的手持背负设备白名单。
+function isHandheldBackpackIpAddress(ipAddress: string): boolean {
+  return HANDHELD_BACKPACK_IP_ADDRESSES.has(ipAddress);
 }
 
 // 根据固定区间生成无人机 IP 白名单，保持规则集中且便于维护。

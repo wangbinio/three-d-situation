@@ -1,4 +1,7 @@
-import { DRONE_NODE_TYPE } from "@/domain/topologyTypes";
+import {
+  DRONE_NODE_TYPE,
+  HANDHELD_BACKPACK_NODE_TYPE,
+} from "@/domain/topologyTypes";
 
 export interface NodeTypeStyle {
   type: number;
@@ -149,9 +152,27 @@ export const NODE_TYPE_STYLES: readonly NodeTypeStyle[] = [
     maximumScale: 75,
     heightOffset: 2,
   },
+  {
+    type: HANDHELD_BACKPACK_NODE_TYPE,
+    name: "手持背负设备",
+    shape: "人形",
+    color: "#0e932e",
+    modelUri: `${NODE_ICON_BASE_PATH}/cube.glb`,
+    iconUri: `${NODE_SVG_ICON_BASE_PATH}/手持背负.svg`,
+    legendText: "人形-手持背负设备",
+    scale: 0.5,
+    minimumPixelSize: 15,
+    maximumScale: 65,
+    heightOffset: 2,
+  },
 ];
 
-export const DRONE_NODE_TYPE_STYLE = NODE_TYPE_STYLES[NODE_TYPE_STYLES.length - 1]!;
+export const DRONE_NODE_TYPE_STYLE = NODE_TYPE_STYLES.find(
+  (style) => style.type === DRONE_NODE_TYPE,
+)!;
+export const HANDHELD_BACKPACK_NODE_TYPE_STYLE = NODE_TYPE_STYLES.find(
+  (style) => style.type === HANDHELD_BACKPACK_NODE_TYPE,
+)!;
 
 const nodeTypeStyleMap = new Map(
   NODE_TYPE_STYLES.map((nodeTypeStyle) => [nodeTypeStyle.type, nodeTypeStyle]),
