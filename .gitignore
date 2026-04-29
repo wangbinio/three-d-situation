@@ -39,3 +39,4 @@ yarn-error.log
 tasks/visual-check/
 playwright-report/
 test-results/
+dist.tar.gz
