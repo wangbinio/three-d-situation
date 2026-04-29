@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" role="img" aria-label="二类设备骨干">
+  <path d="M20 3 34 11v18l-14 8-14-8V11z" fill="#7e57c2" stroke="#f2ecff" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M12 20h16M20 11v18M13 12l14 16M27 12 13 28" stroke="#f2ecff" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="20" cy="20" r="4" fill="#06101b"/>
+</svg>

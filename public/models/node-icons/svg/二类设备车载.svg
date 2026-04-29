@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" role="img" aria-label="二类设备车载">
+  <path d="M7 24h26l-3-9H11z" fill="#ffb300" stroke="#fff7d6" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M12 15 16 8h8l4 7" fill="#ffb300" stroke="#fff7d6" stroke-width="3" stroke-linejoin="round"/>
+  <circle cx="13" cy="28" r="4" fill="#06101b" stroke="#fff7d6" stroke-width="2"/>
+  <circle cx="27" cy="28" r="4" fill="#06101b" stroke="#fff7d6" stroke-width="2"/>
+</svg>

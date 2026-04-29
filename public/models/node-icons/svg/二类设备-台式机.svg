@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" role="img" aria-label="二类设备-台式机">
+  <rect x="6" y="8" width="28" height="19" rx="3" fill="#5c6bc0" stroke="#eef0ff" stroke-width="3"/>
+  <path d="M15 33h10M20 27v6" stroke="#eef0ff" stroke-width="4" stroke-linecap="round"/>
+  <path d="M12 14h16M12 20h10" stroke="#eef0ff" stroke-width="3" stroke-linecap="round"/>
+</svg>
