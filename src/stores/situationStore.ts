@@ -48,7 +48,10 @@ export const useSituationStore = defineStore("situation", () => {
 
   // 应用一次拓扑快照，保留归一化后的节点、链路和轨迹。
   function applyTopologyResponse(response: TopologyResponse, timestamp: number = Date.now()) {
-    const normalizedTopology = normalizeTopologyResponse(response);
+    const normalizedTopology = normalizeTopologyResponse(response, {
+      groundDefaultHeight: appConfig.groundDefaultHeight,
+      droneDefaultHeight: appConfig.droneDefaultHeight,
+    });
 
     nodes.value = new Map(normalizedTopology.nodes.map((node) => [node.id, node]));
     links.value = new Map(normalizedTopology.links.map((link) => [link.id, link]));

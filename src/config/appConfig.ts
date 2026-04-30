@@ -4,6 +4,8 @@ const DEFAULT_TOPOLOGY_URL =
 const DEFAULT_POLL_INTERVAL_MS = 5000;
 const DEFAULT_HISTORY_MAX_POINTS = 720;
 const DEFAULT_NODE_ICON_SCALE_FACTOR = 2;
+const DEFAULT_GROUND_DEFAULT_HEIGHT = 62;
+const DEFAULT_DRONE_DEFAULT_HEIGHT = 100;
 const MIN_POLL_INTERVAL_MS = 1000;
 
 export interface AppConfig {
@@ -12,6 +14,8 @@ export interface AppConfig {
   pollIntervalMs: number;
   historyMaxPoints: number;
   nodeIconScaleFactor: number;
+  groundDefaultHeight: number;
+  droneDefaultHeight: number;
   hideInvalidCoordinate: boolean;
 }
 
@@ -22,6 +26,8 @@ export type AppConfigEnv = Partial<
     | "VITE_TOPOLOGY_POLL_INTERVAL_MS"
     | "VITE_HISTORY_MAX_POINTS"
     | "VITE_NODE_ICON_SCALE_FACTOR"
+    | "VITE_GROUND_DEFAULT_HEIGHT"
+    | "VITE_DRONE_DEFAULT_HEIGHT"
     | "VITE_HIDE_INVALID_COORDINATE",
     string | boolean | undefined
   >
@@ -46,6 +52,14 @@ export function parseAppConfig(env: AppConfigEnv = {}): AppConfig {
       env.VITE_NODE_ICON_SCALE_FACTOR,
       DEFAULT_NODE_ICON_SCALE_FACTOR,
     ),
+    groundDefaultHeight: readNonNegativeFloat(
+      env.VITE_GROUND_DEFAULT_HEIGHT,
+      DEFAULT_GROUND_DEFAULT_HEIGHT,
+    ),
+    droneDefaultHeight: readNonNegativeFloat(
+      env.VITE_DRONE_DEFAULT_HEIGHT,
+      DEFAULT_DRONE_DEFAULT_HEIGHT,
+    ),
     hideInvalidCoordinate: readBoolean(env.VITE_HIDE_INVALID_COORDINATE, true),
   };
 }
@@ -56,6 +70,8 @@ export const appConfig = parseAppConfig({
   VITE_TOPOLOGY_POLL_INTERVAL_MS: import.meta.env.VITE_TOPOLOGY_POLL_INTERVAL_MS,
   VITE_HISTORY_MAX_POINTS: import.meta.env.VITE_HISTORY_MAX_POINTS,
   VITE_NODE_ICON_SCALE_FACTOR: import.meta.env.VITE_NODE_ICON_SCALE_FACTOR,
+  VITE_GROUND_DEFAULT_HEIGHT: import.meta.env.VITE_GROUND_DEFAULT_HEIGHT,
+  VITE_DRONE_DEFAULT_HEIGHT: import.meta.env.VITE_DRONE_DEFAULT_HEIGHT,
   VITE_HIDE_INVALID_COORDINATE: import.meta.env.VITE_HIDE_INVALID_COORDINATE,
 });
 
@@ -95,6 +111,20 @@ function readPositiveFloat(value: string | boolean | undefined, fallback: number
 
   const parsedValue = Number(value);
   if (!Number.isFinite(parsedValue) || parsedValue <= 0) {
+    return fallback;
+  }
+
+  return parsedValue;
+}
+
+// 读取非负浮点配置，小于 0 或无法解析时回退到默认值。
+function readNonNegativeFloat(value: string | boolean | undefined, fallback: number): number {
+  if (typeof value !== "string") {
+    return fallback;
+  }
+
+  const parsedValue = Number(value);
+  if (!Number.isFinite(parsedValue) || parsedValue < 0) {
     return fallback;
   }
 

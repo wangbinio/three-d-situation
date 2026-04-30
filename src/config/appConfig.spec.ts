@@ -11,6 +11,8 @@ describe("parseAppConfig", () => {
     expect(config.pollIntervalMs).toBe(5000);
     expect(config.historyMaxPoints).toBe(720);
     expect(config.nodeIconScaleFactor).toBe(2);
+    expect(config.groundDefaultHeight).toBe(62);
+    expect(config.droneDefaultHeight).toBe(100);
     expect(config.hideInvalidCoordinate).toBe(true);
   });
 
@@ -21,6 +23,8 @@ describe("parseAppConfig", () => {
       VITE_TOPOLOGY_POLL_INTERVAL_MS: "3000",
       VITE_HISTORY_MAX_POINTS: "120",
       VITE_NODE_ICON_SCALE_FACTOR: "1.5",
+      VITE_GROUND_DEFAULT_HEIGHT: "81.5",
+      VITE_DRONE_DEFAULT_HEIGHT: "150",
       VITE_HIDE_INVALID_COORDINATE: "false",
     });
 
@@ -30,6 +34,8 @@ describe("parseAppConfig", () => {
       pollIntervalMs: 3000,
       historyMaxPoints: 120,
       nodeIconScaleFactor: 1.5,
+      groundDefaultHeight: 81.5,
+      droneDefaultHeight: 150,
       hideInvalidCoordinate: false,
     });
   });
@@ -39,11 +45,15 @@ describe("parseAppConfig", () => {
       VITE_TOPOLOGY_POLL_INTERVAL_MS: "999",
       VITE_HISTORY_MAX_POINTS: "0",
       VITE_NODE_ICON_SCALE_FACTOR: "0",
+      VITE_GROUND_DEFAULT_HEIGHT: "-1",
+      VITE_DRONE_DEFAULT_HEIGHT: "-1",
     });
 
     expect(config.pollIntervalMs).toBe(5000);
     expect(config.historyMaxPoints).toBe(720);
     expect(config.nodeIconScaleFactor).toBe(2);
+    expect(config.groundDefaultHeight).toBe(62);
+    expect(config.droneDefaultHeight).toBe(100);
   });
 
   it("normalizes blank strings and boolean text safely", () => {

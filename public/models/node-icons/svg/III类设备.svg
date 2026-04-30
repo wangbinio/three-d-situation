@@ -1,5 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" role="img" aria-label="设备">
-  <title>设备</title>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" role="img" aria-label="III类设备">
+  <title>III类设备</title>
   <rect x="4" y="5" width="32" height="30" rx="4" fill="#d81e06" stroke="#ffe3de" stroke-width="2.8"/>
   <path d="M4 14.5h32M4 25.5h32" stroke="#ffe3de" stroke-width="2.6" stroke-linecap="round"/>
   <rect x="8" y="9" width="6.5" height="2.8" rx="1.4" fill="#ffe3de"/>

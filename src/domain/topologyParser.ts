@@ -13,6 +13,11 @@ import {
   type TopologyValidationWarning,
 } from "./topologyTypes";
 
+export interface TopologyHeightConfig {
+  groundDefaultHeight?: number;
+  droneDefaultHeight?: number;
+}
+
 interface ParseNodeLocationOptions {
   hideZeroZero?: boolean;
 }
@@ -23,7 +28,10 @@ const INVALID_LOCATION: ParsedLocation = {
   height: 0,
   hasValidLocation: false,
 };
-const DRONE_DEFAULT_HEIGHT = 100;
+const DEFAULT_TOPOLOGY_HEIGHT_CONFIG: Required<TopologyHeightConfig> = {
+  groundDefaultHeight: 62,
+  droneDefaultHeight: 100,
+};
 const DRONE_IP_ADDRESSES = buildDroneIpAddressSet([
   ["172.16.6", 11, 18],
   ["172.16.7", 20, 30],
@@ -72,14 +80,20 @@ export function parseNodeLocation(
 }
 
 // 将后端拓扑响应归一化为前端稳定模型，并生成可选校验告警。
-export function normalizeTopologyResponse(response: TopologyResponse): NormalizedTopology {
+export function normalizeTopologyResponse(
+  response: TopologyResponse,
+  heightConfig: TopologyHeightConfig = {},
+): NormalizedTopology {
   if (response.code !== 0) {
     return createEmptyTopology();
   }
 
   const rawNodes = Array.isArray(response.data?.topo?.node) ? response.data.topo.node : [];
   const rawLinks = Array.isArray(response.data?.topo?.link) ? response.data.topo.link : [];
-  const nodes = rawNodes.map(normalizeNode).filter((node): node is SituationNode => node !== null);
+  const normalizedHeightConfig = normalizeHeightConfig(heightConfig);
+  const nodes = rawNodes
+    .map((rawNode) => normalizeNode(rawNode, normalizedHeightConfig))
+    .filter((node): node is SituationNode => node !== null);
   const links = rawLinks.map(normalizeLink).filter((link): link is SituationLink => link !== null);
 
   return {
@@ -89,7 +103,10 @@ export function normalizeTopologyResponse(response: TopologyResponse): Normalize
   };
 }
 
-function normalizeNode(rawNode: RawTopologyNode): SituationNode | null {
+function normalizeNode(
+  rawNode: RawTopologyNode,
+  heightConfig: Required<TopologyHeightConfig>,
+): SituationNode | null {
   const nodeId = readNonEmptyString(rawNode.node_id);
   if (nodeId === null) {
     return null;
@@ -97,7 +114,11 @@ function normalizeNode(rawNode: RawTopologyNode): SituationNode | null {
 
   const ipAddress = readNonEmptyString(rawNode.node_manage_ip_addr) ?? "--";
   const nodeType = resolveNodeType(rawNode, ipAddress);
-  const parsedLocation = normalizeNodeLocation(parseNodeLocation(rawNode.node_location), nodeType);
+  const parsedLocation = normalizeNodeLocation(
+    parseNodeLocation(rawNode.node_location),
+    nodeType,
+    heightConfig,
+  );
 
   return {
     id: nodeId,
@@ -182,7 +203,22 @@ function resolveNodeType(rawNode: RawTopologyNode, ipAddress: string): number {
 }
 
 // 在归一化阶段补齐无人机默认高度，避免后续渲染层与轨迹层看到不同结果。
-function normalizeNodeLocation(parsedLocation: ParsedLocation, nodeType: number): ParsedLocation {
+function normalizeNodeLocation(
+  parsedLocation: ParsedLocation,
+  nodeType: number,
+  heightConfig: Required<TopologyHeightConfig>,
+): ParsedLocation {
+  // 非无人机坐标无效或高度过低时，统一使用地面默认高度。
+  if (
+    nodeType !== DRONE_NODE_TYPE &&
+    (!parsedLocation.hasValidLocation || parsedLocation.height < 0.1)
+  ) {
+    return {
+      ...parsedLocation,
+      height: heightConfig.groundDefaultHeight,
+    };
+  }
+
   if (
     nodeType !== DRONE_NODE_TYPE ||
     !parsedLocation.hasValidLocation ||
@@ -193,8 +229,33 @@ function normalizeNodeLocation(parsedLocation: ParsedLocation, nodeType: number)
 
   return {
     ...parsedLocation,
-    height: DRONE_DEFAULT_HEIGHT,
+    height: heightConfig.droneDefaultHeight,
   };
+}
+
+// 归一化高度配置，避免非法外部参数污染节点坐标。
+function normalizeHeightConfig(
+  heightConfig: TopologyHeightConfig,
+): Required<TopologyHeightConfig> {
+  return {
+    groundDefaultHeight: readNonNegativeHeight(
+      heightConfig.groundDefaultHeight,
+      DEFAULT_TOPOLOGY_HEIGHT_CONFIG.groundDefaultHeight,
+    ),
+    droneDefaultHeight: readNonNegativeHeight(
+      heightConfig.droneDefaultHeight,
+      DEFAULT_TOPOLOGY_HEIGHT_CONFIG.droneDefaultHeight,
+    ),
+  };
+}
+
+// 读取非负高度，非法值回退到默认高度。
+function readNonNegativeHeight(value: number | undefined, fallback: number): number {
+  if (typeof value !== "number" || !Number.isFinite(value) || value < 0) {
+    return fallback;
+  }
+
+  return value;
 }
 
 function isValidCoordinate(longitude: number, latitude: number, height: number): boolean {

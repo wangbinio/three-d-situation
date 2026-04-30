@@ -56,7 +56,7 @@ describe("normalizeTopologyResponse", () => {
       status: NodeStatus.Online,
       longitude: 113.057538,
       latitude: 28.6636,
-      height: 0,
+      height: 62,
       ipAddress: "192.168.2.1",
       hasValidLocation: true,
     });
@@ -129,28 +129,31 @@ describe("normalizeTopologyResponse", () => {
   });
 
   it("overrides node type to drone and patches missing drone height in normalization", () => {
-    const result = normalizeTopologyResponse({
-      code: 0,
-      data: {
-        topo: {
-          node: [
-            {
-              node_id: "drone-node",
-              node_type: 2,
-              node_status: 1,
-              node_location: "113.057538,28.663600,0",
-              node_manage_ip_addr: "172.16.6.11",
-            },
-          ],
-          link: [],
+    const result = normalizeTopologyResponse(
+      {
+        code: 0,
+        data: {
+          topo: {
+            node: [
+              {
+                node_id: "drone-node",
+                node_type: 2,
+                node_status: 1,
+                node_location: "113.057538,28.663600,0",
+                node_manage_ip_addr: "172.16.6.11",
+              },
+            ],
+            link: [],
+          },
         },
       },
-    });
+      { droneDefaultHeight: 180 },
+    );
 
     expect(result.nodes[0]).toMatchObject({
       id: "drone-node",
       type: DRONE_NODE_TYPE,
-      height: 100,
+      height: 180,
       ipAddress: "172.16.6.11",
       hasValidLocation: true,
     });
@@ -183,33 +186,36 @@ describe("normalizeTopologyResponse", () => {
   });
 
   it("keeps original node type for non-drone IP addresses", () => {
-    const result = normalizeTopologyResponse({
-      code: 0,
-      data: {
-        topo: {
-          node: [
-            {
-              node_id: "normal-node",
-              node_type: 5,
-              node_status: 1,
-              node_location: "113.057538,28.663600,0",
-              node_manage_ip_addr: "172.16.6.99",
-            },
-          ],
-          link: [],
+    const result = normalizeTopologyResponse(
+      {
+        code: 0,
+        data: {
+          topo: {
+            node: [
+              {
+                node_id: "normal-node",
+                node_type: 5,
+                node_status: 1,
+                node_location: "113.057538,28.663600,0",
+                node_manage_ip_addr: "172.16.6.99",
+              },
+            ],
+            link: [],
+          },
         },
       },
-    });
+      { groundDefaultHeight: 81 },
+    );
 
     expect(result.nodes[0]).toMatchObject({
       id: "normal-node",
       type: 5,
-      height: 0,
+      height: 81,
       ipAddress: "172.16.6.99",
     });
   });
 
-  it("overrides node type to handheld backpack without changing height", () => {
+  it("overrides node type to handheld backpack and applies ground default height", () => {
     const result = normalizeTopologyResponse({
       code: 0,
       data: {
@@ -231,7 +237,7 @@ describe("normalizeTopologyResponse", () => {
     expect(result.nodes[0]).toMatchObject({
       id: "handheld-node",
       type: HANDHELD_BACKPACK_NODE_TYPE,
-      height: 0,
+      height: 62,
       ipAddress: "172.16.6.2",
       hasValidLocation: true,
     });

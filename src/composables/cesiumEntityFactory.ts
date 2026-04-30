@@ -118,6 +118,8 @@ export function createLinkEntityOptions(
     return null;
   }
 
+  const sourceStyle = getNodeTypeStyle(sourceNode.type);
+  const targetStyle = getNodeTypeStyle(targetNode.type);
   return {
     id: `${LINK_ENTITY_PREFIX}${link.id}`,
     name: `${link.sourceNodeId} -> ${link.targetNodeId}`,
@@ -127,12 +129,12 @@ export function createLinkEntityOptions(
         Cartesian3.fromDegrees(
           sourceNode.longitude,
           sourceNode.latitude,
-          sourceNode.height,
+          sourceNode.height + sourceStyle.heightOffset + 1,
         ),
         Cartesian3.fromDegrees(
           targetNode.longitude,
           targetNode.latitude,
-          targetNode.height,
+          targetNode.height + targetStyle.heightOffset + 1,
         ),
       ],
       width: 1,

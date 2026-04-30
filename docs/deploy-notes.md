@@ -11,6 +11,8 @@
 | `VITE_TOPOLOGY_POLL_INTERVAL_MS` | `5000`                                                      | 拓扑轮询周期，低于 `1000` 会回退默认值。 |
 | `VITE_HISTORY_MAX_POINTS`        | `720`                                                       | 单节点历史轨迹最大点数。                 |
 | `VITE_NODE_ICON_SCALE_FACTOR`    | `2`                                                         | 目标类型图标缩放因子，必须大于 `0`。     |
+| `VITE_GROUND_DEFAULT_HEIGHT`     | `62`                                                        | 地面目标默认高度，单位米，必须不小于 `0`。 |
+| `VITE_DRONE_DEFAULT_HEIGHT`      | `100`                                                       | 无人机默认高度，单位米，必须不小于 `0`。 |
 | `VITE_HIDE_INVALID_COORDINATE`   | `true`                                                      | 是否隐藏无效坐标和 `0.0,0.0` 占位坐标。  |
 | `VITE_TOPOLOGY_PROXY_TARGET`     | 无                                                          | 本地 dev/preview 代理目标。              |
 | `VITE_TILESET_PROXY_TARGET`      | 无                                                          | 本地三维瓦片 dev/preview 代理目标。      |
