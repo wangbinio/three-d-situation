@@ -23,16 +23,23 @@ describe("nodeTypeStyle", () => {
       expect(style.iconUri).toMatch(/^\/models\/node-icons\/svg\/.+\.svg$/);
       expect(style.legendText).toContain(style.name);
       expect(style.scale).toBeGreaterThan(0);
+      expect(style.brightnessBoost).toBeGreaterThan(0);
       expect(style.minimumPixelSize).toBeGreaterThan(0);
       expect(style.maximumScale).toBeGreaterThan(0);
       expect(style.heightOffset).toBeGreaterThanOrEqual(0);
+      expect(typeof style.applyModelTint).toBe("boolean");
     }
   });
 
   it("resolves known node type styles", () => {
     expect(getNodeTypeStyle(1).name).toBe("一类设备终端");
     expect(getNodeTypeStyle(8).shape).toBe("菱形警示");
+    expect(getNodeTypeStyle(1).applyModelTint).toBe(false);
+    expect(getNodeTypeStyle(1).brightnessBoost).toBeGreaterThan(1);
+    expect(getNodeTypeStyle(3).applyModelTint).toBe(false);
     expect(getNodeTypeStyle(30)).toBe(DRONE_NODE_TYPE_STYLE);
+    expect(getNodeTypeStyle(30).brightnessBoost).toBeGreaterThan(1);
+    expect(getNodeTypeStyle(30).applyModelTint).toBe(false);
     expect(getNodeTypeStyle(31)).toBe(HANDHELD_BACKPACK_NODE_TYPE_STYLE);
   });
 

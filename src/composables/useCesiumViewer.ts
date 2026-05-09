@@ -54,7 +54,13 @@ export function useCesiumViewer(containerRef: Ref<HTMLElement | null>) {
         baseLayer: createOfflineBaseLayer(),
         creditContainer: createHiddenCreditContainer(containerRef.value),
       });
-      viewer.value.scene.requestRender();
+
+      const scene = viewer.value.scene;
+
+      // 避免环境光遮蔽把低模或贴图节点进一步压暗。
+      scene.postProcessStages.ambientOcclusion.enabled = false;
+
+      scene.requestRender();
       errorMessage.value = null;
       return viewer.value;
     } catch (error) {

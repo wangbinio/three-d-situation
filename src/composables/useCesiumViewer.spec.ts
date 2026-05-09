@@ -16,6 +16,12 @@ const {
     destroy: ReturnType<typeof vi.fn>;
     isDestroyed: ReturnType<typeof vi.fn>;
     scene: {
+      light: unknown;
+      postProcessStages: {
+        ambientOcclusion: {
+          enabled: boolean;
+        };
+      };
       requestRender: ReturnType<typeof vi.fn>;
     };
   }> = [];
@@ -25,6 +31,12 @@ const {
       destroy: vi.fn(),
       isDestroyed: vi.fn().mockReturnValue(false),
       scene: {
+        light: undefined as unknown,
+        postProcessStages: {
+          ambientOcclusion: {
+            enabled: true,
+          },
+        },
         requestRender: vi.fn(),
       },
     };
@@ -101,6 +113,9 @@ describe("useCesiumViewer", () => {
     expect(viewerOptions.creditContainer?.dataset.testid).toBe(
       "cesium-credit-container",
     );
+    expect(
+      viewerInstances[0]?.scene.postProcessStages.ambientOcclusion.enabled,
+    ).toBe(false);
     expect(viewerInstances[0]?.scene.requestRender).toHaveBeenCalledTimes(1);
   });
 

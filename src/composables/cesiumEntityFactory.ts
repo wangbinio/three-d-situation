@@ -1,10 +1,13 @@
 import {
   Cartesian3,
   Color,
+  ColorBlendMode,
   ColorMaterialProperty,
+  CustomShader,
   Entity,
   HorizontalOrigin,
   PolylineDashMaterialProperty,
+  UniformType,
   VerticalOrigin,
 } from "cesium";
 
@@ -22,6 +25,10 @@ export const NODE_ENTITY_PREFIX = "node:";
 export const TRACK_ENTITY_PREFIX = "track:";
 export const LINK_ENTITY_PREFIX = "link:";
 const NODE_ICON_BASE_PIXEL_SIZE = 24;
+const NODE_SELECTION_SCALE = 1.18;
+const NODE_MODEL_COLOR_BLEND_AMOUNT = 0;
+const OFFLINE_NODE_COLOR = Color.fromCssColorString("#596579");
+const texturedModelShaderByBrightness = new Map<number, CustomShader>();
 
 // 根据节点信息创建节点点位 Entity 配置；无效坐标节点不渲染。
 export function createNodeEntityOptions(
@@ -34,6 +41,12 @@ export function createNodeEntityOptions(
 
   const style = getNodeTypeStyle(node.type);
   const iconPixelSize = NODE_ICON_BASE_PIXEL_SIZE * appConfig.nodeIconScaleFactor;
+  const modelColor = resolveNodeModelColor(style.color, style.applyModelTint, node.status);
+  const modelCustomShader = resolveNodeModelCustomShader(
+    style.applyModelTint,
+    style.brightnessBoost,
+    node.status,
+  );
 
   return {
     id: `${NODE_ENTITY_PREFIX}${node.id}`,
@@ -45,11 +58,12 @@ export function createNodeEntityOptions(
       node.height + style.heightOffset,
     ),
     billboard: {
+      show: true,
       image: style.iconUri,
       width: iconPixelSize,
       height: iconPixelSize,
-      scale: selected ? 1.18 : 1,
-      color: node.status === NodeStatus.Online ? Color.WHITE : Color.fromCssColorString("#596579"),
+      scale: selected ? NODE_SELECTION_SCALE : 1,
+      color: node.status === NodeStatus.Online ? Color.WHITE : OFFLINE_NODE_COLOR,
       horizontalOrigin: HorizontalOrigin.CENTER,
       verticalOrigin: VerticalOrigin.BOTTOM,
       disableDepthTestDistance: Number.POSITIVE_INFINITY,
@@ -59,7 +73,88 @@ export function createNodeEntityOptions(
       nodeId: node.id,
       node,
     },
+    model: {
+      uri: style.modelUri,
+      scale: style.scale * (selected ? NODE_SELECTION_SCALE : 1),
+      minimumPixelSize: style.minimumPixelSize * appConfig.nodeIconScaleFactor,
+      maximumScale: style.maximumScale * appConfig.nodeIconScaleFactor,
+      lightColor: Color.WHITE,
+      color: modelColor,
+      customShader: modelCustomShader,
+      ...resolveNodeModelBlendOptions(style.applyModelTint, node.status),
+      show: true,
+    },
   };
+}
+
+// 计算模型主色；贴图模型在线时保留原材质，仅在离线态统一压暗。
+function resolveNodeModelColor(
+  styleColor: string,
+  applyModelTint: boolean,
+  nodeStatus: NodeStatus,
+): Color | undefined {
+  if (nodeStatus !== NodeStatus.Online) {
+    return OFFLINE_NODE_COLOR;
+  }
+
+  if (!applyModelTint) {
+    return undefined;
+  }
+
+  return Color.fromCssColorString(styleColor);
+}
+
+// 计算模型颜色混合策略；纯几何模型保留明度层次，贴图模型避免被强行盖色。
+function resolveNodeModelBlendOptions(
+  applyModelTint: boolean,
+  nodeStatus: NodeStatus,
+): Partial<NonNullable<Entity.ConstructorOptions["model"]>> {
+  if (nodeStatus !== NodeStatus.Online) {
+    return {
+      colorBlendMode: ColorBlendMode.HIGHLIGHT,
+    };
+  }
+
+  if (!applyModelTint) {
+    return {};
+  }
+
+  return {
+    colorBlendMode: ColorBlendMode.MIX,
+    colorBlendAmount: NODE_MODEL_COLOR_BLEND_AMOUNT,
+  };
+}
+
+// 为贴图模型创建局部亮度增益，避免修改全局场景光照后拖黑 3D Tiles 底图。
+function resolveNodeModelCustomShader(
+  applyModelTint: boolean,
+  brightnessBoost: number,
+  nodeStatus: NodeStatus,
+): CustomShader | undefined {
+  if (applyModelTint || nodeStatus !== NodeStatus.Online || brightnessBoost <= 1) {
+    return undefined;
+  }
+
+  let shader = texturedModelShaderByBrightness.get(brightnessBoost);
+  if (shader !== undefined) {
+    return shader;
+  }
+
+  shader = new CustomShader({
+    uniforms: {
+      u_brightnessBoost: {
+        type: UniformType.FLOAT,
+        value: brightnessBoost,
+      },
+    },
+    fragmentShaderText: `
+      void fragmentMain(FragmentInput fsInput, inout czm_modelMaterial material) {
+        material.diffuse = min(material.diffuse * u_brightnessBoost, vec3(1.0));
+      }
+    `,
+  });
+  texturedModelShaderByBrightness.set(brightnessBoost, shader);
+  return shader;
 }
 
 // 根据节点历史轨迹创建折线 Entity 配置，少于两个点时隐藏轨迹。

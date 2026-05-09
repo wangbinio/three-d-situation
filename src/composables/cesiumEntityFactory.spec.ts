@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { Color, ColorMaterialProperty, HorizontalOrigin, PolylineDashMaterialProperty, VerticalOrigin } from "cesium";
+import {
+  Color,
+  ColorBlendMode,
+  ColorMaterialProperty,
+  CustomShader,
+  HorizontalOrigin,
+  PolylineDashMaterialProperty,
+  VerticalOrigin,
+} from "cesium";
 
 import { normalizeTopologyResponse } from "@/domain/topologyParser";
 import { appendHistoryPoint } from "@/domain/topologyHistory";
@@ -20,7 +28,7 @@ const nodeById = new Map(
 );
 
 describe("cesiumEntityFactory", () => {
-  it("creates node billboard options for valid locations", () => {
+  it("creates node model options for valid locations", () => {
     const node = normalizedTopology.nodes[0]!;
     const options = createNodeEntityOptions(node);
 
@@ -35,8 +43,8 @@ describe("cesiumEntityFactory", () => {
     });
     expect(options?.position).toBeDefined();
     expect(options?.point).toBeUndefined();
-    expect(options?.model).toBeUndefined();
     expect(options?.billboard).toMatchObject({
+      show: false,
       image: "/models/node-icons/svg/III类设备.svg",
       width: 48,
       height: 48,
@@ -46,6 +54,18 @@ describe("cesiumEntityFactory", () => {
       verticalOrigin: VerticalOrigin.BOTTOM,
       disableDepthTestDistance: Number.POSITIVE_INFINITY,
     });
+    expect(options?.model).toMatchObject({
+      uri: "/models/node-icons/diamond.glb",
+      scale: 0.5,
+      minimumPixelSize: 30,
+      maximumScale: 130,
+      lightColor: Color.WHITE,
+      color: Color.fromCssColorString("#ef5350"),
+      colorBlendMode: ColorBlendMode.MIX,
+      colorBlendAmount: 0.65,
+      show: true,
+    });
+    expect(options?.model?.customShader).toBeUndefined();
   });
 
   it("does not create node options for invalid locations", () => {
@@ -58,20 +78,71 @@ describe("cesiumEntityFactory", () => {
     const node = normalizedTopology.nodes[0]!;
     const options = createNodeEntityOptions(node, true);
 
-    expect(options?.billboard).toMatchObject({
-      scale: 1.18,
-      color: Color.WHITE,
+    expect(options?.model).toMatchObject({
+      scale: 0.59,
+      color: Color.fromCssColorString("#ef5350"),
+      colorBlendMode: ColorBlendMode.MIX,
     });
   });
 
-  it("dims offline nodes while keeping the unknown icon", () => {
+  it("dims offline nodes while keeping the unknown icon fallback", () => {
     const node = nodeById.get("node-unknown-type")!;
     const options = createNodeEntityOptions(node);
 
     expect(options?.billboard).toMatchObject({
+      show: false,
       image: "/models/node-icons/svg/未知类型.svg",
       color: Color.fromCssColorString("#596579"),
     });
+    expect(options?.model).toMatchObject({
+      uri: "/models/node-icons/unknown.glb",
+      lightColor: Color.WHITE,
+      color: Color.fromCssColorString("#596579"),
+      show: true,
+    });
+  });
+
+  it("keeps textured models original material color when online", () => {
+    const terminalNode = {
+      ...normalizedTopology.nodes[0]!,
+      id: "node-terminal-online",
+      type: 1,
+    };
+    const options = createNodeEntityOptions(terminalNode);
+
+    expect(options?.model).toMatchObject({
+      uri: "/models/node-icons/soldier.glb",
+      scale: 0.5,
+      minimumPixelSize: 28,
+      maximumScale: 120,
+      lightColor: Color.WHITE,
+      show: true,
+    });
+    expect(options?.model?.customShader).toBeInstanceOf(CustomShader);
+    expect(options?.model?.color).toBeUndefined();
+    expect(options?.model?.colorBlendMode).toBeUndefined();
+    expect(options?.model?.colorBlendAmount).toBeUndefined();
+  });
+
+  it("reuses the same brightness shader for textured models with identical boost", () => {
+    const terminalNode = {
+      ...normalizedTopology.nodes[0]!,
+      id: "node-terminal-online",
+      type: 1,
+    };
+    const handheldNode = {
+      ...normalizedTopology.nodes[0]!,
+      id: "node-handheld-online",
+      type: 31,
+    };
+
+    const terminalOptions = createNodeEntityOptions(terminalNode);
+    const handheldOptions = createNodeEntityOptions(handheldNode);
+
+    expect(terminalOptions?.model?.customShader).toBeDefined();
+    expect(terminalOptions?.model?.customShader).toBe(
+      handheldOptions?.model?.customShader,
+    );
   });
 
   it("creates track options and hides short tracks", () => {
