@@ -69,7 +69,9 @@ describe("cesiumEntityFactory", () => {
         | DistanceDisplayCondition
         | undefined,
     );
-    expect(billboardDistanceDisplayCondition.near).toBe(3001);
+    expect(billboardDistanceDisplayCondition.near).toBe(
+      appConfig.nodeModelSwitchDistance + 1,
+    );
     expect(billboardDistanceDisplayCondition.far).toBe(
       Number.POSITIVE_INFINITY,
     );

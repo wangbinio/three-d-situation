@@ -56,9 +56,9 @@ describe("appendHistoryPoint", () => {
       existingHistory,
       {
         ...baseNode,
-        longitude: baseNode.longitude + 0.5e-8,
-        latitude: baseNode.latitude - 0.5e-8,
-        height: baseNode.height + 0.5e-8,
+        longitude: baseNode.longitude + 0.5e-6,
+        latitude: baseNode.latitude - 0.5e-6,
+        height: baseNode.height + 0.05,
       },
       3,
       2000,
@@ -67,13 +67,28 @@ describe("appendHistoryPoint", () => {
     expect(nextHistory).toEqual(existingHistory);
   });
 
-  it("appends positions when any coordinate change reaches the threshold", () => {
+  it("appends positions when height change exceeds the threshold", () => {
     const existingHistory = appendHistoryPoint([], baseNode, 3, 1000);
     const nextHistory = appendHistoryPoint(
       existingHistory,
       {
         ...baseNode,
-        height: baseNode.height + 1e-8,
+        height: baseNode.height + 0.1001,
+      },
+      3,
+      2000,
+    );
+
+    expect(nextHistory).toHaveLength(2);
+  });
+
+  it("appends positions when longitude change exceeds 1e-6 threshold", () => {
+    const existingHistory = appendHistoryPoint([], baseNode, 3, 1000);
+    const nextHistory = appendHistoryPoint(
+      existingHistory,
+      {
+        ...baseNode,
+        longitude: baseNode.longitude + 1.1e-6,
       },
       3,
       2000,

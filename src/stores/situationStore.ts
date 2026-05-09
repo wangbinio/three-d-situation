@@ -2,7 +2,7 @@ import { computed, ref } from "vue";
 import { defineStore } from "pinia";
 
 import { appConfig } from "@/config/appConfig";
-import { appendHistoryPoint } from "@/domain/topologyHistory";
+import { appendHistoryPoint, isSamePosition } from "@/domain/topologyHistory";
 import { normalizeTopologyResponse } from "@/domain/topologyParser";
 import {
   LinkStatus,
@@ -52,10 +52,11 @@ export const useSituationStore = defineStore("situation", () => {
       groundDefaultHeight: appConfig.groundDefaultHeight,
       droneDefaultHeight: appConfig.droneDefaultHeight,
     });
+    const stabilizedNodes = stabilizeNodePositions(nodes.value, normalizedTopology.nodes);
 
-    nodes.value = new Map(normalizedTopology.nodes.map((node) => [node.id, node]));
+    nodes.value = new Map(stabilizedNodes.map((node) => [node.id, node]));
     links.value = new Map(normalizedTopology.links.map((link) => [link.id, link]));
-    histories.value = updateHistories(histories.value, normalizedTopology.nodes, timestamp);
+    histories.value = updateHistories(histories.value, stabilizedNodes, timestamp);
     warnings.value = normalizedTopology.warnings;
     loading.value = false;
     errorMessage.value = null;
@@ -132,6 +133,32 @@ export const useSituationStore = defineStore("situation", () => {
   };
 });
 
+// 用上一轮已接受的位置覆盖本轮抖动点，避免当前位置和轨迹同时抖动。
+function stabilizeNodePositions(
+  currentNodes: ReadonlyMap<string, SituationNode>,
+  nextNodes: readonly SituationNode[],
+): SituationNode[] {
+  return nextNodes.map((node) => {
+    const previousNode = currentNodes.get(node.id);
+    if (
+      previousNode === undefined ||
+      !previousNode.hasValidLocation ||
+      !node.hasValidLocation ||
+      !isSamePosition(previousNode, node)
+    ) {
+      return node;
+    }
+
+    return {
+      ...node,
+      longitude: previousNode.longitude,
+      latitude: previousNode.latitude,
+      height: previousNode.height,
+    };
+  });
+}
+
+// 基于已经稳定化后的节点列表增量维护每个节点的历史轨迹。
 function updateHistories(
   currentHistories: ReadonlyMap<string, PositionPoint[]>,
   nodes: readonly SituationNode[],

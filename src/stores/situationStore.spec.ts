@@ -90,4 +90,36 @@ describe("useSituationStore", () => {
 
     expect(store.warnings).toHaveLength(2);
   });
+
+  it("reuses previous accepted position when new snapshot only contains jitter", () => {
+    const store = useSituationStore();
+
+    store.applyTopologyResponse(topologyFixture, 1000);
+    store.applyTopologyResponse(
+      {
+        ...topologyFixture,
+        data: {
+          topo: {
+            ...topologyFixture.data!.topo,
+            node: topologyFixture.data!.topo!.node!.map((node) =>
+              node.node_id === "node-001"
+                ? {
+                    ...node,
+                    node_location: "113.0575385,28.6635995,62.05",
+                  }
+                : node,
+            ),
+          },
+        },
+      },
+      2000,
+    );
+
+    expect(store.nodes.get("node-001")).toMatchObject({
+      longitude: 113.057538,
+      latitude: 28.6636,
+      height: 62,
+    });
+    expect(store.histories.get("node-001")).toHaveLength(1);
+  });
 });
