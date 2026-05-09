@@ -4,6 +4,7 @@ const DEFAULT_TOPOLOGY_URL =
 const DEFAULT_POLL_INTERVAL_MS = 5000;
 const DEFAULT_HISTORY_MAX_POINTS = 720;
 const DEFAULT_NODE_ICON_SCALE_FACTOR = 2;
+const DEFAULT_NODE_MODEL_SWITCH_DISTANCE = 300;
 const DEFAULT_GROUND_DEFAULT_HEIGHT = 62;
 const DEFAULT_DRONE_DEFAULT_HEIGHT = 100;
 const MIN_POLL_INTERVAL_MS = 1000;
@@ -14,6 +15,7 @@ export interface AppConfig {
   pollIntervalMs: number;
   historyMaxPoints: number;
   nodeIconScaleFactor: number;
+  nodeModelSwitchDistance: number;
   groundDefaultHeight: number;
   droneDefaultHeight: number;
   hideInvalidCoordinate: boolean;
@@ -26,6 +28,7 @@ export type AppConfigEnv = Partial<
     | "VITE_TOPOLOGY_POLL_INTERVAL_MS"
     | "VITE_HISTORY_MAX_POINTS"
     | "VITE_NODE_ICON_SCALE_FACTOR"
+    | "VITE_NODE_MODEL_SWITCH_DISTANCE"
     | "VITE_GROUND_DEFAULT_HEIGHT"
     | "VITE_DRONE_DEFAULT_HEIGHT"
     | "VITE_HIDE_INVALID_COORDINATE",
@@ -52,6 +55,10 @@ export function parseAppConfig(env: AppConfigEnv = {}): AppConfig {
       env.VITE_NODE_ICON_SCALE_FACTOR,
       DEFAULT_NODE_ICON_SCALE_FACTOR,
     ),
+    nodeModelSwitchDistance: readPositiveFloat(
+      env.VITE_NODE_MODEL_SWITCH_DISTANCE,
+      DEFAULT_NODE_MODEL_SWITCH_DISTANCE,
+    ),
     groundDefaultHeight: readNonNegativeFloat(
       env.VITE_GROUND_DEFAULT_HEIGHT,
       DEFAULT_GROUND_DEFAULT_HEIGHT,
@@ -70,6 +77,7 @@ export const appConfig = parseAppConfig({
   VITE_TOPOLOGY_POLL_INTERVAL_MS: import.meta.env.VITE_TOPOLOGY_POLL_INTERVAL_MS,
   VITE_HISTORY_MAX_POINTS: import.meta.env.VITE_HISTORY_MAX_POINTS,
   VITE_NODE_ICON_SCALE_FACTOR: import.meta.env.VITE_NODE_ICON_SCALE_FACTOR,
+  VITE_NODE_MODEL_SWITCH_DISTANCE: import.meta.env.VITE_NODE_MODEL_SWITCH_DISTANCE,
   VITE_GROUND_DEFAULT_HEIGHT: import.meta.env.VITE_GROUND_DEFAULT_HEIGHT,
   VITE_DRONE_DEFAULT_HEIGHT: import.meta.env.VITE_DRONE_DEFAULT_HEIGHT,
   VITE_HIDE_INVALID_COORDINATE: import.meta.env.VITE_HIDE_INVALID_COORDINATE,

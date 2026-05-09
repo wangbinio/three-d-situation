@@ -4,6 +4,7 @@ import {
   ColorBlendMode,
   ColorMaterialProperty,
   CustomShader,
+  DistanceDisplayCondition,
   Entity,
   HorizontalOrigin,
   PolylineDashMaterialProperty,
@@ -27,8 +28,17 @@ export const LINK_ENTITY_PREFIX = "link:";
 const NODE_ICON_BASE_PIXEL_SIZE = 24;
 const NODE_SELECTION_SCALE = 1.18;
 const NODE_MODEL_COLOR_BLEND_AMOUNT = 0;
+const NODE_DISPLAY_SWITCH_DISTANCE_EPSILON = 1;
 const OFFLINE_NODE_COLOR = Color.fromCssColorString("#596579");
 const texturedModelShaderByBrightness = new Map<number, CustomShader>();
+const nodeModelDistanceDisplayCondition = new DistanceDisplayCondition(
+  0,
+  appConfig.nodeModelSwitchDistance,
+);
+const nodeBillboardDistanceDisplayCondition = new DistanceDisplayCondition(
+  appConfig.nodeModelSwitchDistance + NODE_DISPLAY_SWITCH_DISTANCE_EPSILON,
+  Number.POSITIVE_INFINITY,
+);
 
 // 根据节点信息创建节点点位 Entity 配置；无效坐标节点不渲染。
 export function createNodeEntityOptions(
@@ -67,6 +77,7 @@ export function createNodeEntityOptions(
       horizontalOrigin: HorizontalOrigin.CENTER,
       verticalOrigin: VerticalOrigin.BOTTOM,
       disableDepthTestDistance: Number.POSITIVE_INFINITY,
+      distanceDisplayCondition: nodeBillboardDistanceDisplayCondition,
     },
     properties: {
       kind: "node",
@@ -82,6 +93,7 @@ export function createNodeEntityOptions(
       color: modelColor,
       customShader: modelCustomShader,
       ...resolveNodeModelBlendOptions(style.applyModelTint, node.status),
+      // distanceDisplayCondition: nodeModelDistanceDisplayCondition,
       show: true,
     },
   };
